@@ -1,3 +1,8 @@
+//android {
+    //namespace 'io.user_3301'
+    // ... outras configurações como compileSdkVersion, defaultConfig etc.
+//}
+
 allprojects {
     repositories {
         google()
