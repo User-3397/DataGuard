@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dataUsagePage.dart';
 
 void main() => runApp(MyApp());
 
@@ -9,33 +10,61 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       // Application name
-      title: 'Flutter Hello World',
-      // Application theme data, you can set the colors for the application as
-      // you want
-      theme: ThemeData(
+      title: 'DataGuard',
+
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: Color(0xff272727),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.grey[900],
+          foregroundColor: Colors.white,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[800],
+            foregroundColor: Colors.white,
+          ),
+        ),
+        textTheme: ThemeData.dark().textTheme.apply(
+              bodyColor: Colors.white, // texto branco
+              displayColor: Colors.white,
+            ),
+
         // useMaterial3: false,
-        primarySwatch: Colors.blue,
+        //primarySwatch: Colors.amber,
       ),
       // A widget which will be started on application startup
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: '3F4D221AB'),
     );
   }
 }
 
 class MyHomePage extends StatelessWidget {
   final String title;
-  const MyHomePage({super.key, required this.title});  
+  const MyHomePage({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // The title text which will be shown on the action bar
-        title: Text(title),
-      ),
-      body: Center(
-        child: Text(
-          'Hello, World!',
+      appBar: AppBar(title: Text(title)),
+      body: Container(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("lib/assets/images/digital_03.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+            child: ElevatedButton(
+              child: const Text('Ver uso de dados'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DataUsageScreen()),
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
