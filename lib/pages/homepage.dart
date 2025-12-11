@@ -1,0 +1,78 @@
+import 'package:flutter/material.dart';
+import 'package:user_3301/pages/data_usage_page.dart';
+import 'package:user_3301/models/bateria.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final Battery _battery = Battery();
+  int _nivelBateria = 0;
+  int _bytesEnviados = 0;
+  int _bytesRecebidos = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _getBatteryLevel();
+  }
+
+  Future<void> _getBatteryLevel() async {
+    final nivel = await _battery.batteryLevel;
+    setState(() {
+      _nivelBateria = nivel;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Pagina Principal"),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+                "B: $_nivelBateria% | ${_bytesEnviados ~/ 1024}KB | ${_bytesRecebidos ~/ 1024}KB"),
+          ),
+        ],
+      ),
+      body: Container(
+        child: DecoratedBox(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("lib/assets/images/digital_03.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Center(
+              child: Column(children: [
+            ElevatedButton(
+              child: Text('Ver uso de dados'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => DataUsageScreen()),
+                );
+              },
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              child: Text('Ver uso de dados'),
+              onPressed: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => BatteryPage()),
+                // );
+              },
+            ),
+          ])),
+        ),
+      ),
+    );
+  }
+}
