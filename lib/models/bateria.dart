@@ -1,8 +1,13 @@
 import 'package:flutter/services.dart';
+import 'dart:async'; // não é obrigatorio se houver '.listen()'
 
 class Battery {
-  static const _channel = MethodChannel('samples.flutter.dev/battery');
+  static const _channel = MethodChannel('user_3301.dev/battery');
+//Escuta mudanças contínuas (stream)
+  static const EventChannel _eventChannel =
+      EventChannel('user_3301.dev/batteryStream');
 
+  // Consulta pontual:
   Future<int> getBatteryLevel() async {
     try {
       final nivel = await _channel.invokeMethod<int>('getBatteryLevel');
@@ -13,10 +18,6 @@ class Battery {
 
     return 0;
   }
-
-  // Escuta mudanças contínuas (stream)
-  static const EventChannel _eventChannel =
-      EventChannel('samples.flutter.dev/batteryStream');
 
   static Stream<int> batteryLevelStream() {
     return _eventChannel.receiveBroadcastStream().map((event) => event as int);

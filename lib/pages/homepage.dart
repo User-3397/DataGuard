@@ -25,6 +25,13 @@ class _HomePageState extends State<HomePage> {
     // escuta contínua
     Battery.batteryLevelStream().listen((nivel) {
       setState(() => _nivelBateria = nivel);
+    }, onError: (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("<Erro> (batteryLevelStream): $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     });
   }
 
@@ -35,10 +42,17 @@ class _HomePageState extends State<HomePage> {
   //}
 
   Future<void> _getBatteryLevel() async {
-    final nivel = await _battery.getBatteryLevel();
-    setState(() {
-      _nivelBateria = nivel;
-    });
+    try {
+      final nivel = await _battery.getBatteryLevel();
+      setState(() => _nivelBateria = nivel);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("<Erro> (_getBatteryLevel): $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -67,10 +81,10 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               child: const Text('Ver uso de dados'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => DataUsageScreen()),
-                );
+                //Navigator.push(
+                //  context,
+                //  MaterialPageRoute(builder: (context) => DataUsageScreen()),
+                //);
               },
             ),
             const SizedBox(height: 30),
