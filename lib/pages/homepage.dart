@@ -18,11 +18,24 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    // leitura inicial
     _getBatteryLevel();
+
+    // escuta contínua
+    Battery.batteryLevelStream().listen((nivel) {
+      setState(() => _nivelBateria = nivel);
+    });
   }
 
+  //Future<void> getData() async {
+  //final supabase = Supabase.instance.client;
+  //final data = await supabase.from('tabela').select();
+  //print(data);
+  //}
+
   Future<void> _getBatteryLevel() async {
-    final nivel = await _battery.batteryLevel;
+    final nivel = await _battery.getBatteryLevel();
     setState(() {
       _nivelBateria = nivel;
     });
@@ -37,7 +50,7 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-                "B: $_nivelBateria% | ${_bytesEnviados ~/ 1024}KB | ${_bytesRecebidos ~/ 1024}KB"),
+                "B: $_nivelBateria%"), // | ${_bytesEnviados ~/ 1024}KB | ${_bytesRecebidos ~/ 1024}KB"),
           ),
         ],
       ),
@@ -52,7 +65,7 @@ class _HomePageState extends State<HomePage> {
           child: Center(
               child: Column(children: [
             ElevatedButton(
-              child: Text('Ver uso de dados'),
+              child: const Text('Ver uso de dados'),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -61,15 +74,15 @@ class _HomePageState extends State<HomePage> {
               },
             ),
             const SizedBox(height: 30),
-            ElevatedButton(
-              child: Text('Ver uso de dados'),
-              onPressed: () {
-                // Navigator.push(
-                //   context,
-                //   MaterialPageRoute(builder: (context) => BatteryPage()),
-                // );
-              },
-            ),
+            //ElevatedButton(
+            //  child: Text('Ver uso de dados'),
+            //  onPressed: () {
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => BatteryPage()),
+            // );
+            //  },
+            //),
           ])),
         ),
       ),

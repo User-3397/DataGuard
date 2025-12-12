@@ -53,6 +53,29 @@ class MainActivity : FlutterActivity(){
                     result.notImplemented()
                 }
             }
+
+        // Stream contínuo
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "samples.flutter.dev/batteryStream").setStreamHandler(
+            object : EventChannel.StreamHandler {
+                private var receiver: BroadcastReceiver? = null
+
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    receiver = object : BroadcastReceiver() {
+                        override fun onReceive(context: Context?, intent: Intent?) {
+                            val nivel = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+                            events?.success(nivel)
+                        }
+                    }
+                    val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+                    registerReceiver(receiver, filter)
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    unregisterReceiver(receiver)
+                    receiver = null
+                }
+            }
+        )
     }
 
 
