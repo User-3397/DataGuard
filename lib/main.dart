@@ -3,11 +3,25 @@ import 'dart:html';
 import 'package:flutter/material.dart';
 import 'package:user_3301/pages/homepage.dart';
 import 'package:user_3301/pages/battery_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() => runApp(MyApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  const supabaseUrl = 'https://dnhyfsmusrjumyipabxz.supabase.co';
+  const supabaseKey = String.fromEnvironment(
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRuaHlmc211c3JqdW15aXBhYnh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUzODM5NDgsImV4cCI6MjA4MDk1OTk0OH0.svqoO7eJDEtb7iy16yVdrYCZ00MC9KeQpZUx8cVbYTw');
+
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseKey,
+  );
+
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
