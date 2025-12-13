@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:user_3301/pages/data_usage_page.dart';
+import 'package:user_3301/pages/traffic_page.dart';
 import 'package:user_3301/models/bateria.dart';
 
 class HomePage extends StatefulWidget {
@@ -81,10 +81,10 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               child: const Text('Ver uso de dados'),
               onPressed: () {
-                //Navigator.push(
-                //  context,
-                //  MaterialPageRoute(builder: (context) => DataUsageScreen()),
-                //);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TrafficPage()),
+                );
               },
             ),
             const SizedBox(height: 30),

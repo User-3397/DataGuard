@@ -14,7 +14,9 @@ import android.net.TrafficStats
 
 class MainActivity : FlutterActivity(){
     private val CHANNEL = "io.user_3301/uso_rede"
-
+    private val TRAFFIC_CHANNEL = "user_3301.dev/traffic"
+    private var service: TrafficVpnService? = null
+    
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
@@ -83,6 +85,23 @@ class MainActivity : FlutterActivity(){
                 }
             }
         )
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, TRAFFIC_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                private var service: TrafficVpnService? = null
+
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    service = TrafficVpnService()
+                    service?.setEventSink(events)
+                    service?.onCreate()
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    service?.onDestroy()
+                    service = null
+                }
+            })
+        
     }
 
 
