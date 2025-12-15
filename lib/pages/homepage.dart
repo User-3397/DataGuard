@@ -48,9 +48,17 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("<Erro> (_getBatteryLevel): $e"),
-          backgroundColor: Colors.red,
-        ),
+            backgroundColor: const Color(0xff490500),
+            content: Text("<Erro> (_getBatteryLevel): $e",
+                style: const TextStyle(color: Colors.white)),
+            action: SnackBarAction(
+              label: "Ok",
+              textColor: Colors.yellow,
+              onPressed: () {
+                // Exemplo: apenas fechar o snackbar ou registrar log
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            )),
       );
     }
   }

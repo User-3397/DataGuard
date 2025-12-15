@@ -32,8 +32,9 @@ class _TrafficPageState extends State<TrafficPage> {
     }, onError: (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Erro ao capturar tráfego: $e"),
-          backgroundColor: Colors.red,
+          content: Text("Erro ao capturar tráfego: $e",
+              style: const TextStyle(color: Colors.white)),
+          backgroundColor: Color(0xff460500),
         ),
       );
     });
