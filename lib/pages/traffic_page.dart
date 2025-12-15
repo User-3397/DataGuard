@@ -86,6 +86,26 @@ class _TrafficPageState extends State<TrafficPage> {
             ],
           ),
           const Divider(),
+          Column(children: [
+            ElevatedButton(
+              onPressed: () async {
+                final granted = await VpnChannel.requestVpnPermission();
+                if (granted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Permissão de VPN concedida")),
+                  );
+                  // aqui você pode iniciar a captura
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text("Permissão de VPN pendente ou negada")),
+                  );
+                }
+              },
+              child: const Text("Pedir Permissão VPN"),
+            ),
+          ]),
+          const Divider(),
           Expanded(
             child: ListView.builder(
               itemCount: _trafego.length,

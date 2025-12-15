@@ -4,22 +4,40 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.VpnService
+import android.net.TrafficStats
 import android.os.BatteryManager
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.EventChannel
-import android.net.TrafficStats
 
 class MainActivity : FlutterActivity(){
     private val CHANNEL = "io.user_3301/uso_rede"
     private val TRAFFIC_CHANNEL = "user_3301.dev/traffic"
+    private val VPN_CHANNEL = "user_3301.dev/vpn"
     private var service: TrafficVpnService? = null
     
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, VPN_CHANNEL) .setMethodCallHandler {
+            call, result -> 
+                if (call.method == "requestVpnPermission") {
+                    val intent = VpnService.prepare(this) 
+                    if (intent != null) { 
+                        // ainda não tem permissão → abre tela de confirmação 
+                        startActivityForResult(intent, 100) 
+                        result.success(false) // aguardando confirmação 
+                    } else { // já tem permissão 
+                        result.success(true) 
+                    } 
+                } else { 
+                    result.notImplemented() 
+                } 
+            }
+
         // Channel para Mb de dados:
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
             call, result ->
@@ -37,6 +55,22 @@ class MainActivity : FlutterActivity(){
                 result.notImplemented()
             }
         }
+
+        // private fun pedirPermissaoVpn() {
+        //     val intent = VpnService.prepare(this)
+        //     if (intent != null) {
+        //         // ainda não tem permissão → abre tela de confirmação
+        //         startActivityForResult(intent, 100) 
+        //     } else {
+        //         // já tem permissão → pode iniciar direto
+        //         iniciarVpnService()
+        //     }
+        // }
+        
+        // private fun iniciarVpnService() {
+        //     val intent = Intent(this, TrafficVpnService::class.java)
+        //     startService(intent)
+        // }
 
         // Channel para VPN
         // MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "user_3301.dev/vpn")
@@ -88,7 +122,7 @@ class MainActivity : FlutterActivity(){
 
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, TRAFFIC_CHANNEL)
             .setStreamHandler(object : EventChannel.StreamHandler {
-                private var service: TrafficVpnService? = null
+                //private var service: TrafficVpnService? = null
 
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     service = TrafficVpnService()
@@ -102,8 +136,16 @@ class MainActivity : FlutterActivity(){
                 }
             })
         
+
     }
 
-
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == 100) {
+            // Aqui você pode avisar o Flutter se o usuário aceitou ou não
+            val granted = (resultCode == RESULT_OK)
+            // Exemplo simples: log ou callback
+        }
+    }
 }
 

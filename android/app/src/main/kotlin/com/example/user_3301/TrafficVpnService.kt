@@ -7,6 +7,11 @@ import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.net.InetAddress
 
+import android.os.BatteryManager
+import android.content.Intent 
+import android.content.IntentFilter
+
+
 class TrafficVpnService : VpnService(), Runnable {
     private var vpnInterface: ParcelFileDescriptor? = null
     private var thread: Thread? = null
@@ -39,6 +44,13 @@ class TrafficVpnService : VpnService(), Runnable {
         val buffer = ByteBuffer.allocate(32767)
 
         while (!Thread.interrupted()) {
+            val nivelBat =getBatteryLevel()
+            if (nivelBat <= 25){
+                eventSink?.success("Captura encerrada: $nivelBat% de bateria.")
+                stopSelf()
+                break
+            }
+
             val length = inputStream.read(buffer.array())
             if (length > 0) {
                 buffer.limit(length)
@@ -46,6 +58,11 @@ class TrafficVpnService : VpnService(), Runnable {
                 eventSink?.success(info)
             }
         }
+    }
+
+    private fun getBatteryLevel(): Int {
+        val bm = getSystemService(BATTERY_SERVICE) as BatteryManager 
+        return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
     }
 }
 
