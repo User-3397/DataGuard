@@ -85,27 +85,32 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           child: Center(
-              child: Column(children: [
-            ElevatedButton(
-              child: const Text('Ver uso de dados'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TrafficPage()),
-                );
-              },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  child: const Text('Ver uso de dados'),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const TrafficPage()),
+                    );
+                  },
+                ),
+                const SizedBox(height: 30),
+                //ElevatedButton(
+                //  child: Text('Ver uso de dados'),
+                //  onPressed: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(builder: (context) => BatteryPage()),
+                // );
+                //  },
+                //),
+              ],
             ),
-            const SizedBox(height: 30),
-            //ElevatedButton(
-            //  child: Text('Ver uso de dados'),
-            //  onPressed: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => BatteryPage()),
-            // );
-            //  },
-            //),
-          ])),
+          ),
         ),
       ),
     );
