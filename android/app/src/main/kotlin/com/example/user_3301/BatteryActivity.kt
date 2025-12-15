@@ -2,6 +2,8 @@ package com.example.user_3301
 
 import android.content.Context
 import android.os.BatteryManager
+import android.content.Intent
+import android.content.IntentFilter
 
 object BatteryHelper {
     fun getBatteryLevel(context: Context): Int {

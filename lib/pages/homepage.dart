@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:user_3301/pages/data_usage_page.dart';
+import 'package:user_3301/pages/traffic_page.dart';
 import 'package:user_3301/models/bateria.dart';
 
 class HomePage extends StatefulWidget {
@@ -25,6 +25,13 @@ class _HomePageState extends State<HomePage> {
     // escuta contínua
     Battery.batteryLevelStream().listen((nivel) {
       setState(() => _nivelBateria = nivel);
+    }, onError: (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("<Erro> (batteryLevelStream): $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     });
   }
 
@@ -35,10 +42,25 @@ class _HomePageState extends State<HomePage> {
   //}
 
   Future<void> _getBatteryLevel() async {
-    final nivel = await _battery.getBatteryLevel();
-    setState(() {
-      _nivelBateria = nivel;
-    });
+    try {
+      final nivel = await _battery.getBatteryLevel();
+      setState(() => _nivelBateria = nivel);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            backgroundColor: const Color(0xff490500),
+            content: Text("<Erro> (_getBatteryLevel): $e",
+                style: const TextStyle(color: Colors.white)),
+            action: SnackBarAction(
+              label: "Ok",
+              textColor: Colors.yellow,
+              onPressed: () {
+                // Exemplo: apenas fechar o snackbar ou registrar log
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              },
+            )),
+      );
+    }
   }
 
   @override
@@ -69,7 +91,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => DataUsageScreen()),
+                  MaterialPageRoute(builder: (context) => const TrafficPage()),
                 );
               },
             ),

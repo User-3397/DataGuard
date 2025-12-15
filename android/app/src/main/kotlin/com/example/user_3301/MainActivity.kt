@@ -1,13 +1,22 @@
 package com.example.user_3301
 
-import android.net.TrafficStats
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.BatteryManager
+
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import io.flutter.plugin.common.EventChannel
+import android.net.TrafficStats
 
 class MainActivity : FlutterActivity(){
-  private val CHANNEL = "io.user_3301/uso_rede"
-
+    private val CHANNEL = "io.user_3301/uso_rede"
+    private val TRAFFIC_CHANNEL = "user_3301.dev/traffic"
+    private var service: TrafficVpnService? = null
+    
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
@@ -30,21 +39,21 @@ class MainActivity : FlutterActivity(){
         }
 
         // Channel para VPN
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "io.user_3301/vpn")
-            .setMethodCallHandler { call, result ->
-                if (call.method == "iniciarVpn") {
-                    MyVpnService.start(this)
-                    result.success(null)
-                } else if (call.method == "pararVpn") {
-                    MyVpnService.stop(this)
-                    result.success(null)
-                } else {
-                    result.notImplemented()
-                }
-            }
+        // MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "user_3301.dev/vpn")
+        //     .setMethodCallHandler { call, result ->
+        //         if (call.method == "iniciarVpn") {
+        //             MyVpnService.start(this)
+        //             result.success(null)
+        //         } else if (call.method == "pararVpn") {
+        //             MyVpnService.stop(this)
+        //             result.success(null)
+        //         } else {
+        //             result.notImplemented()
+        //         }
+        //     }
 
         // Channel para bateria
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "io.user_3301/bateria")
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "user_3301.dev/battery")
             .setMethodCallHandler { call, result ->
                 if (call.method == "obterNivel") {
                     val nivel = BatteryHelper.getBatteryLevel(this)
@@ -55,7 +64,7 @@ class MainActivity : FlutterActivity(){
             }
 
         // Stream contínuo
-        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "samples.flutter.dev/batteryStream").setStreamHandler(
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "user_3301.dev/batteryStream").setStreamHandler(
             object : EventChannel.StreamHandler {
                 private var receiver: BroadcastReceiver? = null
 
@@ -76,8 +85,25 @@ class MainActivity : FlutterActivity(){
                 }
             }
         )
+
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, TRAFFIC_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                private var service: TrafficVpnService? = null
+
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    service = TrafficVpnService()
+                    service?.setEventSink(events)
+                    service?.onCreate()
+                }
+
+                override fun onCancel(arguments: Any?) {
+                    service?.onDestroy()
+                    service = null
+                }
+            })
+        
     }
 
 
-    }
 }
+
