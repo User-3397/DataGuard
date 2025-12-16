@@ -11,13 +11,13 @@ class TrafficChannel {
   }
 }
 
-class VpnChannel {
-  static const MethodChannel _channel = MethodChannel('user_3301.dev/vpn');
-  static Future<bool> requestVpnPermission() async {
-    final granted = await _channel.invokeMethod<bool>('requestVpnPermission');
-    return granted ?? false;
-  }
-}
+// class VpnChannel {
+//   static const MethodChannel _channel = MethodChannel('user_3301.dev/vpn');
+//   static Future<bool> requestVpnPermission() async {
+//     final granted = await _channel.invokeMethod<bool>('requestVpnPermission');
+//     return granted ?? false;
+//   }
+// }
 /*
 
 - Cada pacote interceptado pelo VpnService é parseado pelo PacketParser.

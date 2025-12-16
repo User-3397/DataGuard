@@ -14,14 +14,15 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.EventChannel
 
 class MainActivity : FlutterActivity(){
-    private val CHANNEL = "io.user_3301/uso_rede"
-    private val TRAFFIC_CHANNEL = "user_3301.dev/traffic"
-    private val VPN_CHANNEL = "user_3301.dev/vpn"
-    private var service: TrafficVpnService? = null
+    private val CHANNEL = "user_3301.dev/uso_rede" // uso de rede (TrafficStats)
+    private val TRAFFIC_CHANNEL = "user_3301.dev/traffic" // stream de tráfego
+    private val VPN_CHANNEL = "user_3301.dev/vpn" // permissão VPN
+    private var service: TrafficVpnService? = null // referência ao serviço de tráfego
     
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
+        // Canal para pedir permissão de VPN
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, VPN_CHANNEL) .setMethodCallHandler {
             call, result -> 
                 if (call.method == "requestVpnPermission") {
@@ -38,7 +39,7 @@ class MainActivity : FlutterActivity(){
                 } 
             }
 
-        // Channel para Mb de dados:
+        // Channel para uso de dados (bytes) pelo app:
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
             call, result ->
             if (call.method == "obterUsoRede") {
@@ -97,7 +98,7 @@ class MainActivity : FlutterActivity(){
                 }
             }
 
-        // Stream contínuo
+        // Stream contínuo de bateria: 
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "user_3301.dev/batteryStream").setStreamHandler(
             object : EventChannel.StreamHandler {
                 private var receiver: BroadcastReceiver? = null
@@ -120,6 +121,7 @@ class MainActivity : FlutterActivity(){
             }
         )
 
+        // Stream contínuo de tráfego (via VpnService)
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, TRAFFIC_CHANNEL)
             .setStreamHandler(object : EventChannel.StreamHandler {
                 //private var service: TrafficVpnService? = null

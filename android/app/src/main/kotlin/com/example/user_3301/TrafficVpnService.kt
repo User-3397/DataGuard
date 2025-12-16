@@ -17,6 +17,7 @@ class TrafficVpnService : VpnService(), Runnable {
     private var thread: Thread? = null
     private var eventSink: EventChannel.EventSink? = null
 
+    // Flutter injeta o EventSink para enviar dados ao Dart
     fun setEventSink(sink: EventChannel.EventSink?) {
         eventSink = sink
     }
@@ -50,7 +51,8 @@ class TrafficVpnService : VpnService(), Runnable {
                 stopSelf()
                 break
             }
-
+            
+            buffer.clear()
             val length = inputStream.read(buffer.array())
             if (length > 0) {
                 buffer.limit(length)
@@ -60,12 +62,14 @@ class TrafficVpnService : VpnService(), Runnable {
         }
     }
 
+    // Obtém nível de bateria atual
     private fun getBatteryLevel(): Int {
         val bm = getSystemService(BATTERY_SERVICE) as BatteryManager 
         return bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
     }
 }
 
+// Parser de pacotes IPv4/TCP/UDP
 object PacketParser {
     fun parsePacket(buffer: ByteBuffer): String {
         buffer.position(0)

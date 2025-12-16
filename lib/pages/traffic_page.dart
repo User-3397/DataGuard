@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:user_3301/traffic_channel.dart';
+import 'package:user_3301/vpn_channel.dart';
 
 class TrafficPage extends StatefulWidget {
   const TrafficPage({Key? key}) : super(key: key);
@@ -94,7 +95,9 @@ class _TrafficPageState extends State<TrafficPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Permissão de VPN concedida")),
                   );
-                  // aqui você pode iniciar a captura
+
+                  // iniciando a captura
+                  _startCapture();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -107,15 +110,24 @@ class _TrafficPageState extends State<TrafficPage> {
           ]),
           const Divider(),
           Expanded(
-            child: ListView.builder(
-              itemCount: _trafego.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  dense: true,
-                  title: Text(_trafego[index]),
-                );
-              },
-            ),
+            child: _capturando
+                ? ListView.builder(
+                    itemCount: _trafego.length,
+                    itemBuilder: (context, index) {
+                      return ListTile(
+                        dense: true,
+                        title: Text(_trafego[index]),
+                      );
+                    },
+                  )
+                : Center(
+                    child: CircularProgressIndicator(
+                      //value: 0.7, // 70% progress
+                      backgroundColor: Color(0xff007ad7),
+                      //valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      strokeWidth: 5.0,
+                    ),
+                  ),
           ),
         ],
       ),
