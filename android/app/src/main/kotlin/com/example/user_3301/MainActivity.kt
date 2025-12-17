@@ -141,6 +141,7 @@ class MainActivity : FlutterActivity(){
 
     }
 
+    // resultado da tela de permissao VPN
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100) {

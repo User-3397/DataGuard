@@ -1,15 +1,15 @@
 package com.example.user_3301
 
+import io.flutter.plugin.common.EventChannel
 import android.net.VpnService
 import android.os.ParcelFileDescriptor
-import io.flutter.plugin.common.EventChannel
+import android.os.BatteryManager
+import android.content.Intent 
+import android.content.IntentFilter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.net.InetAddress
 
-import android.os.BatteryManager
-import android.content.Intent 
-import android.content.IntentFilter
 
 
 class TrafficVpnService : VpnService(), Runnable {
@@ -76,7 +76,7 @@ object PacketParser {
 
         val versionAndIhl = buffer.get().toInt()
         val version = (versionAndIhl shr 4) and 0xF
-        val ihl = (versionAndIhl and 0xF) * 4
+        //val ihl = (versionAndIhl and 0xF) * 4
 
         if (version != 4) return "Não é IPv4"
 
