@@ -12,16 +12,18 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.EventChannel
-import kotlin.concurrent.thread
-import kotlinx.coroutines.CompletableDeferred
+//import kotlin.concurrent.thread
+//import kotlinx.coroutines.CompletableDeferred
 
 class MainActivity : FlutterActivity(){
     private val CHANNEL = "user_3301.dev/uso_rede" // uso de rede (TrafficStats)
     private val TRAFFIC_CHANNEL = "user_3301.dev/traffic" // stream de tráfego
     private val VPN_CHANNEL = "user_3301.dev/vpn" // permissão VPN
     private var service: TrafficVpnService? = null // referência ao serviço de tráfego
-    private var vpnPermissionCompleter: CompletableDeferred<Boolean>? = null
-    
+    //private var vpnPermissionCompleter: CompletableDeferred<Boolean>? = null
+    // Guardar o resultado pendente da chamada Flutter:
+    private var pendingResult: MethodChannel.Result? = null
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
@@ -32,17 +34,18 @@ class MainActivity : FlutterActivity(){
                     val intent = VpnService.prepare(this) 
                     if (intent != null) { 
                         // ainda não tem permissão → abre tela de confirmação 
-                        vpnPermissionCompleter = CompletableDeferred()
+                        pendingResult =result
+                        //vpnPermissionCompleter = CompletableDeferred()
                         startActivityForResult(intent, 100) 
                         // Aguardar o resultado assincronamente
-                        thread {
-                            try {
-                                val granted = vpnPermissionCompleter?.await() ?: false
-                                result.success(granted)
-                            } catch (e: Exception) {
-                                result.error("VPN_PERMISSION_ERROR", e.message, null)
-                            }
-                        }
+                        //thread {
+                        //    try {
+                        //        val granted = vpnPermissionCompleter?.await() ?: false
+                        //        result.success(granted)
+                        //    } catch (e: Exception) {
+                        //        result.error("VPN_PERMISSION_ERROR", e.message, null)
+                        //    }
+                        //}
                     } else { // já tem permissão 
                         result.success(true) 
                     } 
@@ -51,7 +54,7 @@ class MainActivity : FlutterActivity(){
                 } 
             }
 
-        // Channel para uso de dados (bytes) pelo app:
+        // Channel para uso de dados (TrafficStats):
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
             call, result ->
             if (call.method == "obterUsoRede") {
@@ -158,8 +161,8 @@ class MainActivity : FlutterActivity(){
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100) {
             val granted = (resultCode == RESULT_OK)
-            vpnPermissionCompleter?.complete(granted)
-            vpnPermissionCompleter = null
+            pendingResult?.success(granted)
+            pendingResult = null
         }
     }
 }
