@@ -46,7 +46,7 @@ class TrafficVpnService : VpnService(), Runnable {
 
         while (!Thread.interrupted()) {
             val nivelBat =getBatteryLevel()
-            if (nivelBat <= 25){
+            if (nivelBat <= 17){
                 eventSink?.success("Captura encerrada: $nivelBat% de bateria.")
                 stopSelf()
                 break
