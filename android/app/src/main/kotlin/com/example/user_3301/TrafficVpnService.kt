@@ -56,9 +56,18 @@ class TrafficVpnService : VpnService(), Runnable {
             val length = inputStream.read(buffer.array())
             if (length > 0) {
                 buffer.limit(length)
-                val info = PacketParser.parsePacket(buffer)
-                eventSink?.success(info)
+                if (length >= 20) { // Mínimo para header IP
+                    val info = PacketParser.parsePacket(buffer)
+                    eventSink?.success(info)
+                } else {
+                    eventSink?.success("Pacote ignorado: tamanho $length < 20")
+                }
+            } else if (length == -1) {
+                // EOF, talvez reconectar ou parar
+                break
             }
+            // Pequena pausa para não sobrecarregar
+            Thread.sleep(10)
         }
     }
 
@@ -74,11 +83,23 @@ object PacketParser {
     fun parsePacket(buffer: ByteBuffer): String {
         buffer.position(0)
 
+        if (buffer.remaining() < 20) return "Pacote muito pequeno"
+
         val versionAndIhl = buffer.get().toInt()
         val version = (versionAndIhl shr 4) and 0xF
-        //val ihl = (versionAndIhl and 0xF) * 4
+        val ihl = (versionAndIhl and 0xF) * 4
 
-        if (version != 4) return "Não é IPv4"
+        if (version == 4) {
+            return parseIPv4(buffer, ihl)
+        } else if (version == 6) {
+            return parseIPv6(buffer)
+        } else {
+            return "Versão IP não suportada: $version"
+        }
+    }
+
+    private fun parseIPv4(buffer: ByteBuffer, ihl: Int): String {
+        if (buffer.remaining() < ihl) return "Header IPv4 incompleto"
 
         buffer.get() // TOS
         val totalLength = buffer.short.toInt() and 0xFFFF
@@ -90,24 +111,84 @@ object PacketParser {
 
         val srcBytes = ByteArray(4)
         buffer.get(srcBytes)
-        val srcIp = InetAddress.getByAddress(srcBytes).hostAddress
+        val srcIp = try {
+            InetAddress.getByAddress(srcBytes).hostAddress
+        } catch (e: Exception) {
+            "IP inválido"
+        }
 
         val dstBytes = ByteArray(4)
         buffer.get(dstBytes)
-        val dstIp = InetAddress.getByAddress(dstBytes).hostAddress
+        val dstIp = try {
+            InetAddress.getByAddress(dstBytes).hostAddress
+        } catch (e: Exception) {
+            "IP inválido"
+        }
+
+        // Pular opções se houver
+        val optionsLength = ihl - 20
+        if (optionsLength > 0 && buffer.remaining() >= optionsLength) {
+            buffer.position(buffer.position() + optionsLength)
+        }
 
         var srcPort = -1
         var dstPort = -1
-        var protoName = "UNKNOWN"
+        var protoName = getProtocolName(protocol)
 
-        if (protocol == 6 || protocol == 17) { // TCP ou UDP
+        if ((protocol == 6 || protocol == 17) && buffer.remaining() >= 8) { // TCP ou UDP
             srcPort = buffer.short.toInt() and 0xFFFF
             dstPort = buffer.short.toInt() and 0xFFFF
-            protoName = if (protocol == 6) "TCP" else "UDP"
-        } else if (protocol == 1) {
-            protoName = "ICMP"
         }
 
         return "$protoName $srcIp:$srcPort → $dstIp:$dstPort (TTL=$ttl, Len=$totalLength)"
+    }
+
+    private fun parseIPv6(buffer: ByteBuffer): String {
+        if (buffer.remaining() < 40) return "Header IPv6 incompleto"
+
+        buffer.get() // Traffic Class (parte)
+        buffer.short // Flow Label
+        val payloadLength = buffer.short.toInt() and 0xFFFF
+        val nextHeader = buffer.get().toInt() and 0xFF
+        val hopLimit = buffer.get().toInt() and 0xFF
+
+        val srcBytes = ByteArray(16)
+        buffer.get(srcBytes)
+        val srcIp = try {
+            InetAddress.getByAddress(srcBytes).hostAddress
+        } catch (e: Exception) {
+            "IPv6 inválido"
+        }
+
+        val dstBytes = ByteArray(16)
+        buffer.get(dstBytes)
+        val dstIp = try {
+            InetAddress.getByAddress(dstBytes).hostAddress
+        } catch (e: Exception) {
+            "IPv6 inválido"
+        }
+
+        var srcPort = -1
+        var dstPort = -1
+        var protoName = getProtocolName(nextHeader)
+
+        if ((nextHeader == 6 || nextHeader == 17) && buffer.remaining() >= 8) { // TCP ou UDP
+            srcPort = buffer.short.toInt() and 0xFFFF
+            dstPort = buffer.short.toInt() and 0xFFFF
+        }
+
+        return "$protoName [$srcIp]:$srcPort → [$dstIp]:$dstPort (HopLimit=$hopLimit, PayloadLen=$payloadLength)"
+    }
+
+    private fun getProtocolName(protocol: Int): String {
+        return when (protocol) {
+            1 -> "ICMP"
+            2 -> "IGMP"
+            6 -> "TCP"
+            17 -> "UDP"
+            41 -> "IPv6"
+            58 -> "ICMPv6"
+            else -> "PROTO_$protocol"
+        }
     }
 }

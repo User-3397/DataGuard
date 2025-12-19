@@ -93,15 +93,15 @@ class _TrafficPageState extends State<TrafficPage> {
                 final granted = await VpnChannel.requestVpnPermission();
                 if (granted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Permissão de VPN concedida")),
+                    const SnackBar(content: Text("Permissão de VPN concedida. Iniciando captura...")),
                   );
 
-                  // iniciando a captura
+                  // iniciando a captura automaticamente
                   _startCapture();
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text("Permissão de VPN pendente ou negada")),
+                        content: Text("Permissão de VPN negada ou cancelada")),
                   );
                 }
               },

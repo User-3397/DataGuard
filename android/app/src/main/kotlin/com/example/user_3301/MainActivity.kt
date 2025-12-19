@@ -12,12 +12,15 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.EventChannel
+import kotlin.concurrent.thread
+import kotlinx.coroutines.CompletableDeferred
 
 class MainActivity : FlutterActivity(){
     private val CHANNEL = "user_3301.dev/uso_rede" // uso de rede (TrafficStats)
     private val TRAFFIC_CHANNEL = "user_3301.dev/traffic" // stream de tráfego
     private val VPN_CHANNEL = "user_3301.dev/vpn" // permissão VPN
     private var service: TrafficVpnService? = null // referência ao serviço de tráfego
+    private var vpnPermissionCompleter: CompletableDeferred<Boolean>? = null
     
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -29,8 +32,17 @@ class MainActivity : FlutterActivity(){
                     val intent = VpnService.prepare(this) 
                     if (intent != null) { 
                         // ainda não tem permissão → abre tela de confirmação 
+                        vpnPermissionCompleter = CompletableDeferred()
                         startActivityForResult(intent, 100) 
-                        result.success(false) // aguardando confirmação 
+                        // Aguardar o resultado assincronamente
+                        thread {
+                            try {
+                                val granted = vpnPermissionCompleter?.await() ?: false
+                                result.success(granted)
+                            } catch (e: Exception) {
+                                result.error("VPN_PERMISSION_ERROR", e.message, null)
+                            }
+                        }
                     } else { // já tem permissão 
                         result.success(true) 
                     } 
@@ -145,9 +157,9 @@ class MainActivity : FlutterActivity(){
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 100) {
-            // Aqui você pode avisar o Flutter se o usuário aceitou ou não
             val granted = (resultCode == RESULT_OK)
-            // Exemplo simples: log ou callback
+            vpnPermissionCompleter?.complete(granted)
+            vpnPermissionCompleter = null
         }
     }
 }
