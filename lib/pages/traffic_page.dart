@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:user_3301/traffic_channel.dart';
+import 'package:user_3301/vpn_channel.dart'; // canal de permissão VPN
 
 class TrafficPage extends StatefulWidget {
   const TrafficPage({Key? key}) : super(key: key);
@@ -86,17 +87,49 @@ class _TrafficPageState extends State<TrafficPage> {
             ],
           ),
           const Divider(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _trafego.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  dense: true,
-                  title: Text(_trafego[index]),
-                );
+          Column(children: [
+            ElevatedButton(
+              onPressed: () async {
+                final granted = await VpnChannel.requestVpnPermission();
+                if (granted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Permissão de VPN concedida. Iniciando captura...")),
+                  );
+
+                  // iniciando a captura automaticamente
+                  _startCapture();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text("Permissão de VPN negada ou cancelada")),
+                  );
+                }
               },
+              child: const Text("Pedir Permissão VPN"),
             ),
-          ),
+          ]),
+          const Divider(),
+          Expanded(
+              child: _capturando
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        //value: 0.7, // 70% progress
+                        backgroundColor: Color(0xff007ad7),
+                        //valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                        strokeWidth: 5.0,
+                      ),
+                    )
+                  : _trafego.isEmpty
+                      ? const Text("Sem captura.")
+                      : ListView.builder(
+                          itemCount: _trafego.length,
+                          itemBuilder: (context, index) {
+                            return ListTile(
+                              dense: true,
+                              title: Text(_trafego[index]),
+                            );
+                          },
+                        )),
         ],
       ),
     );

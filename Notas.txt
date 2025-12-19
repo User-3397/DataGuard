@@ -1,0 +1,27 @@
+1. Pedido de Permissão VPN:
+
+* O botão "Pedir Permissão VPN" chama VpnChannel.requestVpnPermission().
+* Isso invoca o MethodChannel no Android (MainActivity.kt), que usa VpnService.prepare(this) para verificar se a permissão já existe.
+* Se não existir, abre a tela de confirmação do sistema Android (retorna false para o Flutter, indicando que está pendente).
+* Se já existir, retorna true imediatamente.
+
+2. Confirmação do Usuário:
+
+* Quando o usuário confirma na tela do sistema, o método onActivityResult no MainActivity é chamado (código 100), mas atualmente não envia feedback ao Flutter — apenas registra internamente.
+* O app volta ao estado normal, e o usuário precisa prosseguir manualmente.
+
+3. Iniciar Captura (Botão "Start"):
+
+* Após a confirmação, clicar em "Start" chama _startCapture() no traffic_page.dart.
+Isso inicia um Stream via TrafficChannel.trafficStream() (usando EventChannel).
+No lado Android (MainActivity.kt), quando o EventChannel é "ouvido" (onListen), uma nova instância de TrafficVpnService é criada, o EventSink é configurado para enviar dados ao Flutter, e onCreate() é chamado.
+No TrafficVpnService (TrafficVpnService.kt):
+Uma thread é iniciada.
+A VPN é estabelecida com Builder().establish().
+Um loop começa a ler pacotes do FileInputStream (do descritor de arquivo da VPN).
+Cada pacote é parseado pelo PacketParser (extrai IP, portas, protocolo, etc.) e enviado ao Flutter via eventSink.success(info).
+Captura em Tempo Real:
+
+Os pacotes capturados são enviados como strings (ex.: "TCP 192.168.1.1:443 → 8.8.8.8:53 (TTL=64, Len=1500)") para o Flutter.
+A UI (traffic_page.dart) atualiza em tempo real, exibindo os pacotes em uma lista (limitada a 70 itens para performance).
+A captura para automaticamente se a bateria cair abaixo de 17% (checado no loop).
